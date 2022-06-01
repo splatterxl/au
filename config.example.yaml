@@ -1,0 +1,18 @@
+config:
+  guilds:
+    "id_here":
+      allow_expressions: false
+      blacklist_role_ids:
+        - "123456789"
+      allow_user_ids:
+        - "28391937"
+      log_channel_id: "19381930"
+      tags:
+        - trigger: "^+a$" # allows RegExp
+          name: A
+          content: |
+            Lorem ipsum, dolor sit amet
+        - trigger: "1984"
+          name: "1984 auto-response"
+          file: /_content/1984.md # absolute paths are relative to cwd
+
