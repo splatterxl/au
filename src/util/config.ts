@@ -8,7 +8,7 @@ export interface Config {
 export interface ConfigData {
   guilds: Record<string, {
     allow_expressions?: boolean;
-    blacklist_role_ids?: string[];
+    blacklist_user_ids?: string[];
     allow_role_ids?: string[];
     log_channel_id?: string;
     tags: Array<{
@@ -23,7 +23,7 @@ export interface ConfigData {
 export interface ConfigDataResolved {
   guilds: Map<string, {
     allowExpressions: boolean;
-    blacklistRoleIds: string[];
+    denyUserIds: string[];
     allowRoleIds: string[];
     logChannelId: string;
     tags: Array<{
@@ -79,11 +79,11 @@ async function handle(data: Config) {
 
     data.allowExpressions = guild.allow_expressions ?? true;
 
-    if ("blacklist_role_ids" in guild && !Array.isArray(guild.blacklist_role_ids)) {
+    if ("blacklist_user_ids" in guild && !Array.isArray(guild.blacklist_user_ids)) {
       _error("Invalid blacklist_role_ids", field);
     }
 
-    data.blacklistRoleIds = guild.blacklist_role_ids ?? [];
+    data.denyUserIds = guild.blacklist_user_ids ?? [];
 
     if ("allow_role_ids" in guild && !Array.isArray(guild.allow_role_ids)) {
       _error("Invalid allow_role_ids", field);
@@ -104,6 +104,7 @@ async function handle(data: Config) {
     data.tags = await Promise.all(guild.tags.map(async tag => {
       field = ["config", "guilds", id, "tags", guild.tags.indexOf(tag).toString()];
 
+
       if (typeof tag.name !== "string") {
         _error("Invalid tag name", field);
       }
@@ -111,6 +112,9 @@ async function handle(data: Config) {
       if (typeof tag.trigger !== "string") {
         _error("Invalid tag trigger", field);
       }
+      
+      // @ts-ignore
+      let trigger = tag.trigger.indexOf("/") === 0 ? new RegExp(...tag.trigger.slice(1).split("/", 2)) : new RegExp(tag.trigger);
 
       if ("content" in tag && (typeof tag.content !== "string" || !tag.content)) {
         _error("Invalid tag content", field);
@@ -136,8 +140,8 @@ async function handle(data: Config) {
 
       return {
         name: tag.name,
-        trigger: new RegExp(tag.trigger),
-        content: content,
+        trigger,
+        content: content.trim(),
       };
     }));
 

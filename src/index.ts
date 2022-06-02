@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, OAuth2Scopes, PermissionFlagsBits } from "discord.js";
+import { Client, GatewayIntentBits, OAuth2Scopes, Partials, PermissionFlagsBits } from "discord.js";
 import { dirname, resolve } from "node:path/posix";
 import { fileURLToPath } from "node:url";
 import { loadConfig } from "./util/config.js";
@@ -8,8 +8,17 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
   ],
-  partials: [],
+  sweepers: {
+    messages: {
+      interval: /* 5 seconds */ 5000,
+      lifetime: /* 30 minutes */ 1800000,
+    },
+  },
+  partials: [
+    Partials.Message,
+  ]
 });
 
 await loadConfig();
@@ -19,6 +28,7 @@ function dir(path: string, meta = import.meta!.url) {
 }
 
 for await (const [{ name }, { default: handler }] of load<{ default: any }>(dir("events"))) {
+  console.log(":: Load event %s", name);
   client.on(name, handler.bind(null, client));
 }
 
