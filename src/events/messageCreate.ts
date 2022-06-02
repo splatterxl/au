@@ -41,9 +41,18 @@ export default async function (client: Client, message: Message) {
 
   for (const tag of guild.tags) {
     if (tag.trigger.test(clean)) {
-      console.log("tag %s matched by user %s (%s) in channel %s", tag.name, message.author.username, message.author.id, message.channel.id);
+      console.log(
+        "tag %s matched by user %s (%s) in channel %s",
+        tag.name,
+        message.author.username,
+        message.author.id,
+        message.channel.id
+      );
       // fetch the last 5 messages in the channel
-      const messages = message.channel.messages.cache.sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(x => [x.author.id, x.content]).slice(0, 10);
+      const messages = message.channel.messages.cache
+        .sort((a, b) => b.createdTimestamp - a.createdTimestamp)
+        .map((x) => [x.author.id, x.content])
+        .slice(0, 10);
 
       if (guild.logChannelId) {
         const logChannel = message.guild.channels.cache.get(
@@ -63,7 +72,11 @@ export default async function (client: Client, message: Message) {
         }
       }
 
-      if (messages.some(([id, content]) => id === client.user!.id && content === tag.content)) {
+      if (
+        messages.some(
+          ([id, content]) => id === client.user!.id && content === tag.content
+        )
+      ) {
         break;
       }
 
@@ -73,7 +86,6 @@ export default async function (client: Client, message: Message) {
           messageReference: message,
         },
       });
-
 
       break;
     }

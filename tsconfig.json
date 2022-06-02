@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist"
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "extends": "@splatterxl/tsconfig"
 }
