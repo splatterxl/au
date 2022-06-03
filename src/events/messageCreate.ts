@@ -8,7 +8,7 @@ import {
 import { config } from "../util/config.js";
 
 export default async function (client: Client, message: Message) {
-  if (!message.guild) return;
+  if (!message.guild || message.author.bot) return;
 
   const guild = config.guilds.get(message.guild.id);
 
@@ -24,7 +24,7 @@ export default async function (client: Client, message: Message) {
 
     if (channel) {
       channel.send(
-        "My configuration for this server has been removed. Goodbye! :wave:"
+        "I don't have any configuration for this server, please contact my owner(s). Goodbye! :wave:"
       );
     }
 
@@ -33,7 +33,7 @@ export default async function (client: Client, message: Message) {
     return;
   }
 
-  if (message.author.bot || guild.denyUserIds?.includes(message.author.id)) {
+  if (guild.denyUserIds?.includes(message.author.id)) {
     return;
   }
 

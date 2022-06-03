@@ -10,7 +10,7 @@ import {
 } from "discord.js";
 import { config } from "../util/config.js";
 
-export default function (client: Client, guild: Guild) {
+export default async function (client: Client, guild: Guild) {
   // log guild create
   console.log(
     "-> Joined guild %s (%s; owner %s)",
@@ -31,9 +31,9 @@ export default function (client: Client, guild: Guild) {
     console.log("--> Guild %s (%s) has no config", guild.name, guild.id);
 
     if (channel) {
-      channel.send(
+      await channel.send(
         "Hello! I'm a private, selfhosted bot to manage automatic responses to certain phrases.\n\nI don't seem to have any configuration stored for this server, so I'm afraid I will have to leave. If this is a mistake, please check my logs."
-      );
+      ).catch(() => {});
     }
 
     guild.leave();
@@ -41,7 +41,7 @@ export default function (client: Client, guild: Guild) {
     console.log("--> Guild %s (%s) has config", guild.name, guild.id);
 
     if (channel) {
-      channel.send({
+      await channel.send({
         content:
           "Hello! I'm a private, selfhosted bot to manage automatic responses to certain phrases.\n\nI'm now ready to listen to triggers in this server. Don't worry, I don't log messages.",
         components: [
@@ -56,7 +56,7 @@ export default function (client: Client, guild: Guild) {
             ])
             .toJSON(),
         ],
-      });
+      }).catch(() => {});
     }
   }
 }
