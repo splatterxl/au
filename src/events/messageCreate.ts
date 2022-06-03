@@ -4,6 +4,9 @@ import {
   TextBasedChannel,
   ChannelType,
   PermissionFlagsBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js";
 import { config } from "../util/config.js";
 
@@ -40,7 +43,8 @@ export default async function (client: Client, message: Message) {
   const clean = message.content.replace(/<[@&]!?.*?>|<a?:.*?:.*?>/g, " ");
 
   for (const tag of guild.tags) {
-    if (tag.trigger.test(clean)) {
+    let matched: RegExpExecArray;
+    if (matched = tag.trigger.exec(clean)!) {
       console.log(
         "tag %s matched by user %s (%s) in channel %s",
         tag.name,
@@ -54,28 +58,59 @@ export default async function (client: Client, message: Message) {
         .map((x) => [x.author.id, x.content])
         .slice(0, 10);
 
+      const send = !messages.some(
+        ([id, content]) => id === client.user!.id && content === tag.content
+      );
+
       if (guild.logChannelId) {
-        const logChannel = message.guild.channels.cache.get(
+        const logChannel = client.channels.cache.get(
           guild.logChannelId
         ) as TextBasedChannel;
 
         if (logChannel) {
           await logChannel.send({
-            content: `**${message.author.tag}** (\`${message.author.id}\`) triggered response **"${tag.name}"** with content:`,
+            content: `**${message.author.tag}** (\`${message.author.id}\`) triggered response **"${tag.name}"**`,
             embeds: [
               {
                 description: message.content,
                 color: 0x00ff00,
+                fields: [
+                  {
+                    name: "Matched content",
+                    value: matched[0],
+                    inline: true,
+                  },
+                  {
+                    name: "Matched by",
+                    value: `\`${tag.trigger.toString()}\``,
+                    inline: true,
+                  },
+                  {
+                    name: "Matched in",
+                    value: `<#${message.channel.id}>`,
+                    inline: true,
+                  },
+                ],
+                footer: !send ? { text: "Not sent to avoid spam" } : undefined,
               },
+
             ],
+            components: [
+              new ActionRowBuilder<ButtonBuilder>()
+                .addComponents([
+                  new ButtonBuilder()
+                    .setLabel("Jump")
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(message.url),
+                ])
+                .toJSON(),
+            ]
           });
         }
       }
 
       if (
-        messages.some(
-          ([id, content]) => id === client.user!.id && content === tag.content
-        )
+        !send
       ) {
         break;
       }
